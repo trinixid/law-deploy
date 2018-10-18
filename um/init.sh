@@ -32,5 +32,7 @@ sed -e "s/DEPLOY_ENV/$DEPLOY_ENV/g" "${SCRIPTPATH}"/k8s-config-templates/um-api-
 sed -e "s/DEPLOY_ENV/$DEPLOY_ENV/g" "${SCRIPTPATH}"/k8s-config-templates/um-api-seed.tmpl > "${SCRIPTPATH}"/um-api-seed.yaml
 sed -e "s/DEPLOY_ENV/$DEPLOY_ENV/g" "${SCRIPTPATH}"/k8s-config-templates/um-api.tmpl > "${SCRIPTPATH}"/um-api.yaml
 
+mv "${SCRIPTPATH}"/app-configs $PWD/
+
 
 
