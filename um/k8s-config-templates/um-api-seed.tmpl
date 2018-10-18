@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: um-api-seed
-  namespace: DEPLOY_ENV
+  # namespace: DEPLOY_ENV
 spec:
   template:
     metadata:
@@ -27,6 +27,7 @@ spec:
         envFrom:
           - secretRef:
               name: um-api-env
+      
       # - name: cloudsql-proxy
       #   image: gcr.io/cloudsql-docker/gce-proxy:1.11
       #   command: ["/cloud_sql_proxy", "--dir=/cloudsql",
