@@ -17,6 +17,7 @@ spec:
                 operator: In
                 values:
                 - aws
+      restartPolicy: OnFailure
       containers:
       - name: um-api-php
         image: 'asridjufri/um-api-php:DEPLOY_ENV'
@@ -27,4 +28,3 @@ spec:
         envFrom:
           - secretRef:
               name: um-api-env
-    
