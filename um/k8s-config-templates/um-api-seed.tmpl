@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: um-api-seed
+spec:
+  template:
+    metadata:
+      name: um-api-seed
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: provider
+                operator: In
+                values:
+                - aws
+      containers:
+      - name: um-api-php
+        image: 'asridjufri/um-api-php:DEPLOY_ENV'
+        imagePullPolicy: Always
+        args: ["/bin/sh", "-c", "composer dump-autoload -d /var/www/html && php artisan db:seed --class=${DB_SEED_CLASS}"]
+        ports:
+          - containerPort: 9000
+        envFrom:
+          - secretRef:
+              name: um-api-env
+      # - name: cloudsql-proxy
+      #   image: gcr.io/cloudsql-docker/gce-proxy:1.11
+      #   command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+      #             "-instances=${LINOVHR_PROJECT_ID}:${LINOVHR_CLUSTER_REGION}:${LINOVHR_CLOUDSQL}=tcp:5432",
+      #             "-credential_file=/secrets/cloudsql/credentials.json"]
+      #   volumeMounts:
+      #     - name: cloudsql-instance-credentials
+      #       mountPath: /secrets/cloudsql
+      #       readOnly: true
+      #     - name: ssl-certs
+      #       mountPath: /etc/ssl/certs
+      #     - name: cloudsql
+      #       mountPath: /cloudsql
+      # volumes:
+      #   - name: cloudsql-instance-credentials
+      #     secret:
+      #       secretName: cloudsql-instance-credentials
+      #   - name: cloudsql
+      #     emptyDir:
+      #   - name: ssl-certs
+      #     hostPath:
+      #       path: /etc/ssl/certs
+      # restartPolicy: Never

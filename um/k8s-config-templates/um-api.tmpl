@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: um-api-php
+  labels:
+    app: um-api-php
+spec:
+  ports:
+  - port: 9000
+    protocol: TCP
+  selector:
+    app: um-api-php
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: um-api-nginx
+  labels:
+    app: um-api-nginx
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: um-api-nginx
+---
+# apiVersion: v1
+# kind: ReplicationController
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: um-api-php
+spec:
+  template:
+    metadata:
+      labels:
+        app: um-api-php
+    spec:
+      containers:
+      - name: um-api-php
+        image: 'asridjufri/um-api-php:DEPLOY_ENV'
+        ports:
+          - containerPort: 9000
+        envFrom:
+          - secretRef:
+              name: um-api-env
+        volumeMounts:
+        - name: log-storage
+          mountPath: /data/logs
+      # - name: cloudsql-proxy
+      #   image: gcr.io/cloudsql-docker/gce-proxy:1.11
+      #   command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+      #             "-instances=${LINOVHR_PROJECT_ID}:${LINOVHR_CLUSTER_REGION}:${LINOVHR_CLOUDSQL}=tcp:5432",
+      #             "-credential_file=/secrets/cloudsql/credentials.json"]
+      #   volumeMounts:
+      #     - name: cloudsql-instance-credentials
+      #       mountPath: /secrets/cloudsql
+      #       readOnly: true
+      #     - name: ssl-certs
+      #       mountPath: /etc/ssl/certs
+      #     - name: cloudsql
+      #       mountPath: /cloudsql
+      # volumes:
+      #   - name: cloudsql-instance-credentials
+      #     secret:
+      #       secretName: cloudsql-instance-credentials
+      #   - name: cloudsql
+      #     emptyDir:
+      #   - name: ssl-certs
+      #     hostPath:
+      #       path: /etc/ssl/certs
+      #   - name: log-storage
+      #     emptyDir: {}
+          # gcePersistentDisk:
+          #   pdName: log-disk
+          #   fsType: ext4
+---
+# apiVersion: v1
+# kind: ReplicationController
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: um-api-nginx
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: um-api-nginx
+    spec:
+      containers:
+      - name: um-api-nginx
+        image: 'asrijduri/um-api-nginx:DEPLOY_ENV'
+        ports:
+        - containerPort: 80

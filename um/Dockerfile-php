@@ -1,0 +1,75 @@
+FROM php:7.1-fpm
+
+# Install dependencies.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    sudo \
+    procps \
+    curl \
+    libmemcached-dev \
+    libz-dev \
+    libpq-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libfreetype6-dev \
+    libssl-dev \
+    libmcrypt-dev \
+    cron \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install composer.
+RUN curl -sS https://getcomposer.org/installer | php \
+  && chmod +x composer.phar && mv composer.phar /usr/local/bin/composer
+
+# Install php extensions.
+RUN docker-php-ext-install mcrypt && \
+    docker-php-ext-install pdo_pgsql && \
+    docker-php-ext-install pgsql && \
+    docker-php-ext-install bcmath && \
+    docker-php-ext-install pcntl && \
+    docker-php-ext-install zip
+
+#####################################
+# xDebug:
+#####################################
+
+ARG INSTALL_XDEBUG=false
+RUN if [ ${INSTALL_XDEBUG} = true ]; then \
+    # Install the xdebug extension
+    pecl install xdebug && \
+    docker-php-ext-enable xdebug \
+;fi
+
+# Install composer dependencies in another layer.
+COPY composer.json composer.lock ./
+
+RUN composer install --no-plugins --no-scripts --no-autoloader && \
+    chown -R www-data:www-data ./vendor && \
+    /bin/cp -R ./vendor /var/www/html || true
+
+# Copy xdebug configration for remote debugging
+COPY ./app-configs/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+
+# Copy php.ini
+COPY ./app-configs/php/php.ini /usr/local/etc/php/
+
+# Copy application code
+COPY . /var/www/html/
+
+#####################################
+# Setup Cron:
+#####################################
+
+ARG UID=1000
+RUN usermod -u ${UID} www-data
+RUN adduser www-data sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+RUN crontab -l -u www-data > /tmp/mycron; \
+    echo "* * * * * /var/www/html/process-queue.sh >> /dev/null 2>&1" >> /tmp/mycron; \
+    echo "* * * * * /var/www/html/schedule-run.sh >> /dev/null 2>&1" >> /tmp/mycron; \
+    crontab -u www-data /tmp/mycron; \
+    rm /tmp/mycron; \
+    touch /var/log/syslog /var/log/cron;
+
+CMD ["bash", "-c", "composer dump-autoload -d /var/www/html && sudo service cron start && php-fpm"]
