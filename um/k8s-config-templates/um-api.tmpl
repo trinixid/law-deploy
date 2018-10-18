@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: um-api-php
+  namespace: DEPLOY_ENV
   labels:
     app: um-api-php
 spec:
@@ -15,6 +16,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: um-api-nginx
+  namespace: DEPLOY_ENV
   labels:
     app: um-api-nginx
 spec:
@@ -29,6 +31,7 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
+  namespace: DEPLOY_ENV
   name: um-api-php
 spec:
   template:
@@ -80,6 +83,7 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
+  namespace: DEPLOY_ENV
   name: um-api-nginx
 spec:
   replicas: 1
