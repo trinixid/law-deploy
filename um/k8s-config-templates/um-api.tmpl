@@ -38,6 +38,15 @@ spec:
       labels:
         app: um-api-php
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: provider
+                operator: In
+                values:
+                - aws
       containers:
       - name: um-api-php
         image: 'asridjufri/um-api-php:DEPLOY_ENV'
@@ -62,6 +71,15 @@ spec:
       labels:
         app: um-api-nginx
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: provider
+                operator: In
+                values:
+                - aws
       containers:
       - name: um-api-nginx
         image: 'asrijduri/um-api-nginx:DEPLOY_ENV'
