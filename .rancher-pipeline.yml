@@ -1,0 +1,7 @@
+stages:
+- name: test
+  steps:
+  - runScriptConfig:
+      image: gcc:latest
+      shellScript: ls -lah
+timeout: 60
